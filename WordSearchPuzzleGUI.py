@@ -453,14 +453,14 @@ def setup_layout():
     layout1 = [[Column(column4, element_justification='c',
                        background_color='#404040',
                        key='-COL4-'),
-                pin(Column(column1, element_justification='c', vertical_scroll_only=True, scrollable=True,
+                pin(Column(column1, element_justification='c',
                            background_color='#404040',
                            key='-COL1-', visible=False, size=(650, 1015))),
                 pin(Column(column2, element_justification='c',
                            background_color='#404040',
                            key='-COL2-', visible=False)),
-                pin(Column(column3, element_justification='c', scrollable=True,background_color='#404040',
-                           key='-COL3-', visible=False, size=(1198, 808)))
+                pin(Column(column3, element_justification='c',background_color='#404040',
+                           key='-COL3-', visible=False))
                 ]]
 
 
@@ -493,8 +493,7 @@ def window_loop():
     global seed
 
     # Set's up the window
-    window = Window("Search word puzzle generator", layout1, finalize=True, resizable=True)
-    print(window.current_size_accurate())
+    window = Window("Search word puzzle generator", layout1, finalize=True, resizable=True, scaling=True)
     window.grab_any_where_on()
 
     toggle = False
