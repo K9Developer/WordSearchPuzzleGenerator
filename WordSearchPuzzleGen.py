@@ -703,7 +703,6 @@ def create_search_word_puzzle(words, random_chars='abcdefghijklmnopqrstuvwxyz', 
                      add_randomized_chars=add_randomized_chars, random_seed=random_seed,
                      high_res=res_multiplier > 2)
 
-    img.save('grid.png')
     # Creates the page image
     page = Image.new('RGB', (2480 * multiplier // 2, 3508 * multiplier // 2), color=page_color)
 

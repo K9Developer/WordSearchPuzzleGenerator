@@ -27,7 +27,15 @@ sg.theme('Dark')
 
 
 def get_scaling():
-    # called before window created
+
+    """
+    Gets scaling data.
+    Source: https://github.com/PySimpleGUI/PySimpleGUI/issues/4998#issuecomment-985360403
+
+    :return: The scaling data
+    :rtype: float
+    """
+
     root = sg.tk.Tk()
     scaling = root.winfo_fpixels('1i') / 72
     root.destroy()
@@ -506,7 +514,7 @@ def window_loop():
 
     global seed
 
-    # Setup scaling, Source: https://github.com/PySimpleGUI/PySimpleGUI/issues/4998#issuecomment-985360403
+    # Setup scaling
     my_width, my_height = sg.Window.get_screen_size()  # call sg.Window.get_screen_size()
     scaling_old = get_scaling()
     width, height = sg.Window.get_screen_size()
