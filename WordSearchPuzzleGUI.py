@@ -506,6 +506,13 @@ def window_loop():
 
     global seed
 
+    # Setup scaling, Source: https://github.com/PySimpleGUI/PySimpleGUI/issues/4998#issuecomment-985360403
+    my_width, my_height = sg.Window.get_screen_size()  # call sg.Window.get_screen_size()
+    scaling_old = get_scaling()
+    width, height = sg.Window.get_screen_size()
+    scaling = scaling_old * min(width / my_width, height / my_height)
+    sg.set_options(scaling=scaling)
+
     # Set's up the window
     window = sg.Window("Search word puzzle generator", layout1, finalize=True, resizable=True)
     window.grab_any_where_on()
@@ -718,7 +725,7 @@ def window_loop():
 
                     # If the length of the longest word in the words is bigger
                     # than grid_cells_in_row it will show an error
-                    if len(max(words, key=len)) >= grid_cells_in_row:
+                    if words and len(max(words, key=len)) >= grid_cells_in_row:
                         window['-INPUT2NUM-'].set_tooltip(
                             f"The length of {max(words, key=len)} is larger then or equal to the cells in a row, "
                             f"either change the word or\nchange the cells in a row to "

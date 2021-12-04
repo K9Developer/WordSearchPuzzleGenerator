@@ -543,7 +543,7 @@ def fit_text(text, text_size, text_color, max_horizontal_chars, box_outline_colo
     wrapper.max_lines = 3
     wrapper.placeholder = '...'
     wrapper.break_long_words = False
-    wrapper.width = max_horizontal_chars
+    wrapper.width = max_horizontal_chars-10
 
     # Wrap the text
     text = wrapper.fill(text=text)
@@ -702,6 +702,8 @@ def create_search_word_puzzle(words, random_chars='abcdefghijklmnopqrstuvwxyz', 
                      grid_text_size=grid_text_size, random_char_color=random_char_color,
                      add_randomized_chars=add_randomized_chars, random_seed=random_seed,
                      high_res=res_multiplier > 2)
+
+    img.save('grid.png')
     # Creates the page image
     page = Image.new('RGB', (2480 * multiplier // 2, 3508 * multiplier // 2), color=page_color)
 
