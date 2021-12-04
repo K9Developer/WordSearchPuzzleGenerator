@@ -113,10 +113,10 @@ To run the software you need to run the GUI file (WordSearchPuzzleGUI.py)
 then you can edit all the options that relate to the puzzle
 ![image](https://user-images.githubusercontent.com/66069146/144716879-2d90047d-a42b-40ba-abc7-72e1ef375844.png)
 And then you have the next options
-* Save
-* Copy
-* Print
-* Save config
+* Save - Save the image as a PNG/JPG
+* Copy - Copy image to clipboard
+* Print - Print image in a printer
+* Save config - saves all settings in a configuration file
 
 The image looks like this:
 ![Untitled](https://user-images.githubusercontent.com/66069146/144716963-7e6589fe-39d7-43d9-b822-f7fe24c957b8.png)
