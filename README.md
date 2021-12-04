@@ -159,9 +159,6 @@ Don't forget to give the project a star! Thanks again!
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- CONTACT -->
 ## Contact
@@ -169,10 +166,6 @@ Don't forget to give the project a star! Thanks again!
 Your Name - KingOfTNT10@gmail.com
 
 Project Link: [https://github.com/KingOfTNT10/WordSearchPuzzleGenerator](https://github.com/KingOfTNT10/WordSearchPuzzleGenerator)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
