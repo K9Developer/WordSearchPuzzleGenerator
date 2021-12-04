@@ -45,9 +45,9 @@
 [About WSPG](https://github.com/KingOfTNT10/WordSearchPuzzleGenerator)
 
 I started this project because belive it or not in school we had an assignment to do a search word puzzle but 
-I didn't know if theres diagnoals in the puzzle so i was a bit frustrated, So I asked myself: "I could do that better"
-Well first of all I hope i was right and second it wasn't easy, not at all... But I learnt a lot from that project
-for example working with images etc.
+I didn't know if theres diagnoals in the puzzle so i was a bit frustrated, So I asked myself: "Can I maybe make something like this? maybe better?"
+Well first of all I hope i was right and it's better and second it wasn't easy, not at all... But I learnt a lot from that project
+for example working with images, Gui (PySimpleGui), Algorithms, etc.
 and I'm very greatful for that
 
 <p align="right">(<a href="#top">back to top</a>)</p>
