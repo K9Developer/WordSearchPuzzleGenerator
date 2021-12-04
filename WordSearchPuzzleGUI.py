@@ -1,15 +1,17 @@
 import base64
 import io
+import json
+import sys
 import uuid
 
+import PySimpleGUI as sg
 import win32clipboard
-from PIL import Image as PIL_IMAGE
+from PIL import Image
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter
 from PyQt5.QtPrintSupport import QPrintPreviewDialog, QPrinter
 from PyQt5.QtWidgets import QApplication
-from PySimpleGUI import *
 
 import WordSearchPuzzleGen as SWP
 
@@ -21,10 +23,15 @@ button_switch_on = r'assets/images/SwitchOn.png'
 button_switch_off = r'assets/images/SwitchOff.png'
 default_font = 'Dosis 12 bold'
 category_name_font = 'Dosis 11 bold'
-theme('Dark')
+sg.theme('Dark')
 
 
-# TODO: CHNAGE VAR NAMES
+def get_scaling():
+    # called before window created
+    root = sg.tk.Tk()
+    scaling = root.winfo_fpixels('1i') / 72
+    root.destroy()
+    return scaling
 
 
 def to_clipboard(image):
@@ -64,7 +71,7 @@ def pil2pixmap(im):
 
     if im.mode == "RGB":
         r, g, b = im.split()
-        im = PIL_IMAGE.merge("RGB", (b, g, r))
+        im = Image.merge("RGB", (b, g, r))
     im2 = im.convert("RGBA")
     data = im2.tobytes("raw", "RGBA")
     qim = QtGui.QImage(data, im.size[0], im.size[1], QtGui.QImage.Format_ARGB32)
@@ -84,8 +91,8 @@ def save_configuration(variables_info):
     """
 
     # Pops up a message that requests the user to save as a file, then store the file into a var
-    save_filename = popup_get_file("Save as", file_types=(("CONFIG", '.swpconfig'), ("CONFIG", '.swpconfig')),
-                                   save_as=True, no_window=True)
+    save_filename = sg.popup_get_file("Save as", file_types=(("CONFIG", '.swpconfig'), ("CONFIG", '.swpconfig')),
+                                      save_as=True, no_window=True)
     if save_filename:
 
         # Stores all variable names and values inside a dict
@@ -112,7 +119,7 @@ def save_configuration(variables_info):
         with open(save_filename, 'w') as f:
             f.write(base64_message)
 
-        popup(f'Settings Configuration file saved as {save_filename}')
+        sg.popup(f'Settings Configuration file saved as {save_filename}')
 
 
 def load_configuration(window):
@@ -126,7 +133,7 @@ def load_configuration(window):
     """
 
     # Popups a message that requests the user to select a file to load the settings off of
-    save_filename = popup_get_file(
+    save_filename = sg.popup_get_file(
         "Load configuration file", file_types=(("CONFIG", '.swpconfig'), ("CONFIG", '.swpconfig')), no_window=True
     )
 
@@ -180,7 +187,7 @@ def load_configuration(window):
                 window[w_key].update(data[key].replace('None', '') if type(data[key]) == str else data[key])
 
         except json.JSONDecodeError as ex:
-            popup(f'Error while opening the config ({save_filename}) \nError:\n {ex}')
+            sg.popup(f'Error while opening the config ({save_filename}) \nError:\n {ex}')
 
 
 def reset_to_default(window):
@@ -247,7 +254,7 @@ def print_image(image):
         painter = QPainter()
         painter.begin(printer_obj)
         painter.setPen(Qt.red)
-        painter.drawPixmap(0, 0, pil2pixmap(image.resize((int(2480 * 2), int(3508 * 2)), PIL_IMAGE.LANCZOS)))
+        painter.drawPixmap(0, 0, pil2pixmap(image.resize((int(2480 * 2), int(3508 * 2)), Image.LANCZOS)))
         painter.end()
         dlg.close()
         app.exit()
@@ -275,14 +282,14 @@ def save_file(img):
     """
 
     # Pops up a message that requests the user to save the image as a file
-    save_filename = popup_get_file(
+    save_filename = sg.popup_get_file(
         "Save as", file_types=(("PNG", '.png'), ("JPG", ".jpg")), save_as=True, no_window=True
     )
     if save_filename:
         # Save the image
         img.save(save_filename)
 
-        popup(f"Saved: {save_filename}")
+        sg.popup(f"Saved: {save_filename}")
 
 
 def image_to_bios(image, size: tuple):
@@ -317,128 +324,135 @@ def setup_columns():
     global column1, column2, column3, column4
 
     column1 = [
-        [Text("Toggles", text_color='dark gray', font=category_name_font, background_color='#404040', size=(0, 1)),
-         HorizontalSeparator(pad=(20, 0))],
-        [Checkbox("Diagonals", default=True, key='-1TOGGLE-', pad=(20, 0), font=default_font, enable_events=True,
-                  background_color='#404040'),
-         Checkbox("Add randomized characters", default=True, key='-2TOGGLE-', pad=(20, 0), font=default_font,
-                  enable_events=True, background_color='#404040'),
-         Checkbox("Add word bank outline", default=True, key='-3TOGGLE-', pad=(20, 0), font=default_font,
-                  enable_events=True, background_color='#404040')],
-        [Text("Colors", text_color='dark gray', font=category_name_font, size=(0, 1), background_color='#404040'),
-         HorizontalSeparator(pad=(20, 0))],
-        [Text("Grid - line color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-1COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Grid - background color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-2COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Grid - text color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-3COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Grid - randomized characters color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-4COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Page - background color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-5COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Page - title color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-6COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Page - subtitle color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-7COLOR_COMBO-', default_value="Gray", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Word bank - outline color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-8COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Word bank - background color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-9COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Word bank - word color:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
-               key='-10COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
-               background_color='#404040')],
-        [Text("Strings", text_color='dark gray', font=category_name_font, size=(0, 1), background_color='#404040'),
-         HorizontalSeparator(color='gray')],
-        [Text("Words (seperated by ','):", pad=(20, 0), font=default_font, background_color='#404040'), Column([[Input(
-            default_text="Bagel, Three, House", font=default_font, size=(25, 1), key='-INPUT1STR-', enable_events=True,
-            background_color='#404040')]])],
-        [Text("Available random characters:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Column([[Input(default_text="abcdefghijklmnopqrstuvwxyz", font=default_font, size=(25, 1),
-                        key='-INPUT2STR-', enable_events=True, background_color='#404040')]])],
-        [Text("Page title:", pad=(20, 0), font=default_font, background_color='#404040'),
-         Input(default_text="Words", font=default_font, size=(25, 1), key='-INPUT3STR-', enable_events=True,
-               background_color='#404040')],
-        [Text("Page subtitle:", pad=(20, 0), font=default_font, background_color='#404040'), Column([[Multiline(
-            default_text="Circle the correct words", key='-INPUT4STR-', font=default_font, autoscroll=True,
-            size=(30, 1), background_color='#404040', enable_events=True)]])],
-        [Text("Numbers", text_color='dark gray', font=category_name_font, size=(0, 1), background_color='#404040'),
-         HorizontalSeparator(color='gray')],
-        [Text("Grid - cell size:", font=default_font, pad=(20, 0), background_color='#404040'), Column([[Input(
+        [sg.Text("Toggles", text_color='dark gray', font=category_name_font, background_color='#404040', size=(0, 1)),
+         sg.HorizontalSeparator(pad=(20, 0))],
+        [sg.Checkbox("Diagonals", default=True, key='-1TOGGLE-', pad=(20, 0), font=default_font, enable_events=True,
+                     background_color='#404040'),
+         sg.Checkbox("Add randomized characters", default=True, key='-2TOGGLE-', pad=(20, 0), font=default_font,
+                     enable_events=True, background_color='#404040'),
+         sg.Checkbox("Add word bank outline", default=True, key='-3TOGGLE-', pad=(20, 0), font=default_font,
+                     enable_events=True, background_color='#404040')],
+        [sg.Text("Colors", text_color='dark gray', font=category_name_font, size=(0, 1), background_color='#404040'),
+         sg.HorizontalSeparator(pad=(20, 0))],
+        [sg.Text("Grid - line color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-1COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Grid - background color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-2COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Grid - text color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-3COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Grid - randomized characters color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-4COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Page - background color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-5COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Page - title color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-6COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Page - subtitle color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-7COLOR_COMBO-', default_value="Gray", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Word bank - outline color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-8COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Word bank - background color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-9COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Word bank - word color:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-10COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Strings", text_color='dark gray', font=category_name_font, size=(0, 1), background_color='#404040'),
+         sg.HorizontalSeparator(color='gray')],
+        [sg.Text("Words (seperated by ','):", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Column([[sg.Input(
+             default_text="Bagel, Three, House", font=default_font, size=(25, 1), key='-INPUT1STR-', enable_events=True,
+             background_color='#404040')]])],
+        [sg.Text("Available random characters:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Column([[sg.Input(default_text="abcdefghijklmnopqrstuvwxyz", font=default_font, size=(25, 1),
+                              key='-INPUT2STR-', enable_events=True, background_color='#404040')]])],
+        [sg.Text("Page title:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Input(default_text="Words", font=default_font, size=(25, 1), key='-INPUT3STR-', enable_events=True,
+                  background_color='#404040')],
+        [sg.Text("Page subtitle:", pad=(20, 0), font=default_font, background_color='#404040'),
+         sg.Column([[sg.Multiline(
+             default_text="Circle the correct words", key='-INPUT4STR-', font=default_font, autoscroll=True,
+             size=(30, 1), background_color='#404040', enable_events=True)]])],
+        [sg.Text("Numbers", text_color='dark gray', font=category_name_font, size=(0, 1), background_color='#404040'),
+         sg.HorizontalSeparator(color='gray')],
+        [sg.Text("Grid - cell size:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input(
             default_text="100", font=default_font, size=(3, 1), key='-INPUT1NUM-', enable_events=True,
             background_color='#404040')]])],
-        [Text("Grid - cells in a row ('auto' to automatically set size):", font=default_font, pad=(20, 0),
-              background_color='#404040'), Column([[Input(default_text="auto", font=default_font, size=(4, 1),
-                                                          key='-INPUT2NUM-', enable_events=True,
-                                                          background_color='#404040')]])],
-        [Text("Grid - line thickness:", font=default_font, pad=(20, 0), background_color='#404040'), Column([[Input(
-            default_text="100", font=default_font, size=(3, 1), key='-INPUT3NUM-', enable_events=True,
-            background_color='#404040')]])],
-        [Text("Grid - text size:", font=default_font, pad=(20, 0), background_color='#404040'), Column([[Input(
+        [sg.Text("Grid - cells in a row ('auto' to automatically set size):", font=default_font, pad=(20, 0),
+                 background_color='#404040'), sg.Column([[sg.Input(default_text="auto", font=default_font, size=(4, 1),
+                                                                   key='-INPUT2NUM-', enable_events=True,
+                                                                   background_color='#404040')]])],
+        [sg.Text("Grid - line thickness:", font=default_font, pad=(20, 0), background_color='#404040'),
+         sg.Column([[sg.Input(
+             default_text="100", font=default_font, size=(3, 1), key='-INPUT3NUM-', enable_events=True,
+             background_color='#404040')]])],
+        [sg.Text("Grid - text size:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input(
             default_text="100", font=default_font, size=(3, 1), key='-INPUT4NUM-', background_color='#404040',
             enable_events=True)]])],
-        [Text("Word bank - outline thickness:", font=default_font, pad=(20, 0), background_color='#404040'),
-         Column([[Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT5NUM-', enable_events=True,
-                        background_color='#404040')]])],
-        [Text("Word bank - word size:", font=default_font, pad=(20, 0), background_color='#404040'), Column([[Input(
-            default_text="100", font=default_font, size=(3, 1), key='-INPUT6NUM-', enable_events=True,
-            background_color='#404040')]])],
-        [Text("Page - title size:", font=default_font, pad=(20, 0), background_color='#404040'), Column([[Input(
-            default_text="100", font=default_font, size=(3, 1), key='-INPUT7NUM-', enable_events=True,
-            background_color='#404040')]])],
-        [Text("Page - subtitle size:", font=default_font, pad=(20, 0), background_color='#404040'), Column([[Input(
-            default_text="100", font=default_font, size=(3, 1), key='-INPUT8NUM-', enable_events=True,
-            background_color='#404040')]])],
-        [Text("Other", text_color='dark gray', font=category_name_font, size=(0, 1), background_color='#404040'),
-         HorizontalSeparator(color='gray')],
-        [Text("Random seed (leave empty for randomness):", font=default_font, pad=(20, 0), background_color='#404040'),
-         Input(default_text="", font=default_font, size=(3, 1), key='-OTHER1-', enable_events=True,
-               background_color='#404040')],
-        [Button("Reset to default", key='-RESET-',
-                image_data=image_to_bios(PIL_IMAGE.open(default_button_texture), (150, 40)),
-                border_width=0, button_color='#404040', mouseover_colors='#404040')]]
-    column2 = [[Text(size=(0, 60), background_color='#404040'), VerticalSeparator()]]
+        [sg.Text("Word bank - outline thickness:", font=default_font, pad=(20, 0), background_color='#404040'),
+         sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT5NUM-', enable_events=True,
+                              background_color='#404040')]])],
+        [sg.Text("Word bank - word size:", font=default_font, pad=(20, 0), background_color='#404040'),
+         sg.Column([[sg.Input(
+             default_text="100", font=default_font, size=(3, 1), key='-INPUT6NUM-', enable_events=True,
+             background_color='#404040')]])],
+        [sg.Text("Page - title size:", font=default_font, pad=(20, 0), background_color='#404040'),
+         sg.Column([[sg.Input(
+             default_text="100", font=default_font, size=(3, 1), key='-INPUT7NUM-', enable_events=True,
+             background_color='#404040')]])],
+        [sg.Text("Page - subtitle size:", font=default_font, pad=(20, 0), background_color='#404040'),
+         sg.Column([[sg.Input(
+             default_text="100", font=default_font, size=(3, 1), key='-INPUT8NUM-', enable_events=True,
+             background_color='#404040')]])],
+        [sg.Text("Other", text_color='dark gray', font=category_name_font, size=(0, 1), background_color='#404040'),
+         sg.HorizontalSeparator(color='gray')],
+        [sg.Text("Random seed (leave empty for randomness):", font=default_font, pad=(20, 0),
+                 background_color='#404040'),
+         sg.Input(default_text="", font=default_font, size=(3, 1), key='-OTHER1-', enable_events=True,
+                  background_color='#404040')],
+        [sg.Button("Reset to default", key='-RESET-',
+                   image_data=image_to_bios(Image.open(default_button_texture), (150, 40)),
+                   border_width=0, button_color='#404040', mouseover_colors='#404040')]]
+    column2 = [[sg.Text(size=(0, 60), background_color='#404040'), sg.VerticalSeparator()]]
     column3 = [
-        [Button('Randomize', image_filename=default_button_texture, font=default_font, key='RANDOMIZE')],
-        [Text("Enhanced resolution (worse performance)  ", font=default_font, background_color='#404040',
-              tooltip='This option is recommended only for viewing the end result'),
-         Button(image_filename=button_switch_off, key='switch', border_width=0, button_color='#404040',
-                mouseover_colors='#404040', enable_events=True,
-                tooltip='This option is recommended only for viewing the end result')],
-        [Image(key='-CWIMAGE-')],
-        [Button('Exit', image_filename=default_button_texture, font=default_font, key='EXIT', border_width=0,
-                button_color='#404040', mouseover_colors='#404040'),
-         Button('Save Image', image_filename=default_button_texture, font=default_font, key='-SAVE_FILE-',
-                border_width=0, button_color='#404040', mouseover_colors='#404040'),
-         Button('Print', image_filename=default_button_texture, font=default_font, key='-PRINT-', border_width=0,
-                button_color='#404040', mouseover_colors='#404040'),
-         Button('Save Configuration', image_filename=default_button_texture, font=default_font, key='-SAVE_CONFIG-',
-                border_width=0, button_color='#404040', mouseover_colors='#404040'),
-         Button('Load Configuration', image_filename=default_button_texture, font=default_font, key='-LOAD_CONFIG-',
-                border_width=0, button_color='#404040', mouseover_colors='#404040'),
-         Button('Copy', image_filename=default_button_texture, font=default_font, key='-COPY_TO_CLIPBOARD-')]
+        [sg.Button('Randomize', image_filename=default_button_texture, font=default_font, key='RANDOMIZE')],
+        [sg.Text("Enhanced resolution (worse performance)  ", font=default_font, background_color='#404040',
+                 tooltip='This option is recommended only for viewing the end result'),
+         sg.Button(image_filename=button_switch_off, key='switch', border_width=0, button_color='#404040',
+                   mouseover_colors='#404040', enable_events=True,
+                   tooltip='This option is recommended only for viewing the end result')],
+        [sg.Image(key='-CWIMAGE-')],
+        [sg.Button('Exit', image_filename=default_button_texture, font=default_font, key='EXIT', border_width=0,
+                   button_color='#404040', mouseover_colors='#404040'),
+         sg.Button('Save Image', image_filename=default_button_texture, font=default_font, key='-SAVE_FILE-',
+                   border_width=0, button_color='#404040', mouseover_colors='#404040'),
+         sg.Button('Print', image_filename=default_button_texture, font=default_font, key='-PRINT-', border_width=0,
+                   button_color='#404040', mouseover_colors='#404040'),
+         sg.Button('Save Configuration', image_filename=default_button_texture, font=default_font, key='-SAVE_CONFIG-',
+                   border_width=0, button_color='#404040', mouseover_colors='#404040'),
+         sg.Button('Load Configuration', image_filename=default_button_texture, font=default_font, key='-LOAD_CONFIG-',
+                   border_width=0, button_color='#404040', mouseover_colors='#404040'),
+         sg.Button('Copy', image_filename=default_button_texture, font=default_font, key='-COPY_TO_CLIPBOARD-')]
     ]
-    column4 = [[Button("Start creating the page", image_filename=default_button_texture, font=default_font,
-                       key='-START-', border_width=0, button_color='#404040', mouseover_colors='#404040')]]
+    column4 = [[sg.Button("Start creating the page", image_filename=default_button_texture, font=default_font,
+                          key='-START-', border_width=0, button_color='#404040', mouseover_colors='#404040')]]
 
 
 def setup_layout():
@@ -450,17 +464,17 @@ def setup_layout():
     """
 
     global layout1
-    layout1 = [[Column(column4, element_justification='c',
-                       background_color='#404040',
-                       key='-COL4-'),
-                pin(Column(column1, element_justification='c',
-                           background_color='#404040',
-                           key='-COL1-', visible=False, size=(650, 1015))),
-                pin(Column(column2, element_justification='c',
-                           background_color='#404040',
-                           key='-COL2-', visible=False)),
-                pin(Column(column3, element_justification='c',background_color='#404040',
-                           key='-COL3-', visible=False))
+    layout1 = [[sg.Column(column4, element_justification='c',
+                          background_color='#404040',
+                          key='-COL4-'),
+                sg.pin(sg.Column(column1, element_justification='c',
+                                 background_color='#404040',
+                                 key='-COL1-', visible=False, size=(650, 1015))),
+                sg.pin(sg.Column(column2, element_justification='c',
+                                 background_color='#404040',
+                                 key='-COL2-', visible=False)),
+                sg.pin(sg.Column(column3, element_justification='c', background_color='#404040',
+                                 key='-COL3-', visible=False))
                 ]]
 
 
@@ -493,7 +507,7 @@ def window_loop():
     global seed
 
     # Set's up the window
-    window = Window("Search word puzzle generator", layout1, finalize=True, resizable=True, scaling=True)
+    window = sg.Window("Search word puzzle generator", layout1, finalize=True, resizable=True)
     window.grab_any_where_on()
 
     toggle = False
@@ -503,7 +517,7 @@ def window_loop():
         event, values = window.read()
 
         # Detects if the window closed if it does it will exit the program
-        if event == WINDOW_CLOSED or event == 'EXIT':
+        if event == sg.WINDOW_CLOSED or event == 'EXIT':
             window.close()
             exit(0)
 
@@ -621,12 +635,12 @@ def window_loop():
 
             else:
                 window['-INPUT1STR-'].set_tooltip('All good :)')
-                window['-INPUT1STR-'].ParentRowFrame.config(background=theme_background_color())
+                window['-INPUT1STR-'].ParentRowFrame.config(background=sg.theme_background_color())
                 checks[0] = True
 
         else:
             window['-INPUT1STR-'].set_tooltip('All good :)')
-            window['-INPUT1STR-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT1STR-'].ParentRowFrame.config(background=sg.theme_background_color())
             checks[0] = True
 
         # If the number of new lines in the subtitle is bigger than 2 it will show an error
@@ -637,7 +651,7 @@ def window_loop():
 
         else:
             window['-INPUT4STR-'].set_tooltip('All good :)')
-            window['-INPUT4STR-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT4STR-'].ParentRowFrame.config(background=sg.theme_background_color())
             checks[-1] = True
 
         # If available_random_chars (the random chars it will put on the grid) is empty it will show an error
@@ -649,7 +663,7 @@ def window_loop():
         else:
             window['-INPUT2STR-'].set_tooltip('All good :)')
             checks[1] = True
-            window['-INPUT2STR-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT2STR-'].ParentRowFrame.config(background=sg.theme_background_color())
 
         # If the cell size is empty it will show an error
         if grid_cell_size == "":
@@ -674,7 +688,7 @@ def window_loop():
 
             else:
                 window['-INPUT1NUM-'].set_tooltip('All good :)')
-                window['-INPUT1NUM-'].ParentRowFrame.config(background=theme_background_color())
+                window['-INPUT1NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
                 checks[2] = True
 
         # If the cells in a row field is empty it will show an error
@@ -714,12 +728,12 @@ def window_loop():
 
                     else:
                         window['-INPUT2NUM-'].set_tooltip('All good :)')
-                        window['-INPUT2NUM-'].ParentRowFrame.config(background=theme_background_color())
+                        window['-INPUT2NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
                         checks[3] = True
 
             else:
                 window['-INPUT2NUM-'].set_tooltip('All good :)')
-                window['-INPUT2NUM-'].ParentRowFrame.config(background=theme_background_color())
+                window['-INPUT2NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
                 checks[3] = True
 
         # If the line width of the grid is empty it will show an error
@@ -743,7 +757,7 @@ def window_loop():
         else:
             grid_line_width = int(grid_line_width)
             window['-INPUT3NUM-'].set_tooltip("All good :)")
-            window['-INPUT3NUM-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT3NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
             checks[4] = True
 
         # If the text size of the grid is empty it will show an error
@@ -767,7 +781,7 @@ def window_loop():
         else:
             grid_text_size = int(grid_text_size)
             window['-INPUT4NUM-'].set_tooltip("All good :)")
-            window['-INPUT4NUM-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT4NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
             checks[5] = True
 
         # If the word bank outline width is empty it will show an error
@@ -791,7 +805,7 @@ def window_loop():
         else:
             word_bank_outline_width = int(word_bank_outline_width)
             window['-INPUT5NUM-'].set_tooltip("All good :)")
-            window['-INPUT5NUM-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT5NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
             checks[6] = True
 
         # If the word bank's word size is empty it will show an error
@@ -815,7 +829,7 @@ def window_loop():
         else:
             word_bank_word_size = int(word_bank_word_size)
             window['-INPUT6NUM-'].set_tooltip("All good :)")
-            window['-INPUT6NUM-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT6NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
             checks[7] = True
 
         # If the page title size is empty it will show an error
@@ -839,7 +853,7 @@ def window_loop():
         else:
             page_title_size = int(page_title_size)
             window['-INPUT7NUM-'].set_tooltip("All good :)")
-            window['-INPUT7NUM-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT7NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
             checks[8] = True
 
         # If the page subtitle size is empty it will show an error
@@ -863,7 +877,7 @@ def window_loop():
         else:
             page_subtitle_size = int(page_subtitle_size)
             window['-INPUT8NUM-'].set_tooltip("All good :)")
-            window['-INPUT8NUM-'].ParentRowFrame.config(background=theme_background_color())
+            window['-INPUT8NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
             checks[9] = True
 
         # If all the checks have passed it will continue

@@ -1,6 +1,5 @@
 import random
 import textwrap
-
 from PIL import Image, ImageDraw, ImageFont
 from fontTools.ttLib import TTFont
 
