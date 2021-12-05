@@ -170,4 +170,4 @@ Project Link: [https://github.com/KingOfTNT10/WordSearchPuzzleGenerator](https:/
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Thanks
-* Thank you [PySimpleGUi](https://github.com/PySimpleGUI/PySimpleGUI) For Great Library And Gui Tools And Encourging Words!
+* Thank you [PySimpleGUi](https://github.com/PySimpleGUI) For An [Amazing Library](https://github.com/PySimpleGUI/PySimpleGUI) And Support!
