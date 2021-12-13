@@ -716,7 +716,7 @@ def create_search_word_puzzle(words, random_chars='abcdefghijklmnopqrstuvwxyz', 
         page_title = ''.join(page_title)
 
     # Draws the title on the page
-    page_draw.text((page.size[0] // 2, page.size[1] // 18), page_title, fill=title_color, font=font, anchor='mb',
+    page_draw.text((page.size[0] // 2, page.size[1] // 18+10), page_title, fill=title_color, font=font, anchor='mb',
                    align='center')
     font = ImageFont.truetype(global_font, subtitle_size)
 

@@ -33,7 +33,9 @@
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -44,11 +46,11 @@
 
 [About WSPG](https://github.com/KingOfTNT10/WordSearchPuzzleGenerator)
 
-I started this project because belive it or not in school we had an assignment to do a search word puzzle but 
-I didn't know if theres diagnoals in the puzzle so i was a bit frustrated, So I asked myself: "Can I maybe make something like this? maybe better?"
-Well first of all I hope i was right and it's better and second it wasn't easy, not at all... But I learnt a lot from that project
-for example working with images, Gui (PySimpleGui), Algorithms, etc.
-and I'm very greatful for that
+I started this project because believe it or not in school we had an assignment to do a search word puzzle, but 
+I didn't know if there's diagonals in the puzzle, so I was a bit frustrated, So I asked myself: "I could do that better"
+Well first I hope I was right and second it wasn't easy, not at all... But I learnt a lot from that project
+for example working with images etc.
+and I'm very grateful for that
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -111,10 +113,10 @@ To run the software you need to run the GUI file (WordSearchPuzzleGUI.py)
 then you can edit all the options that relate to the puzzle
 ![image](https://user-images.githubusercontent.com/66069146/144716879-2d90047d-a42b-40ba-abc7-72e1ef375844.png)
 And then you have the next options
-* Save - Save the image as a PNG/JPG
-* Copy - Copy image to clipboard
-* Print - Print image in a printer
-* Save config - saves all settings in a configuration file
+* Save
+* Copy
+* Print
+* Save config
 
 The image looks like this:
 ![Untitled](https://user-images.githubusercontent.com/66069146/144716963-7e6589fe-39d7-43d9-b822-f7fe24c957b8.png)
@@ -131,9 +133,9 @@ The image looks like this:
 
 - [ ] Playable With Computer
 - [ ] Mark first word
-- [ ] Changable font
+- [ ] Changeable font
 - [ ] More options for GUI
-    - [ ] Changable theme
+    - [ ] Changeable theme
     - [ ] General options
 
 See the [open issues](https://github.com/KingOfTNT10/WordSearchPuzzleGenerator/issues) for a full list of proposed features (and known issues).
@@ -159,15 +161,15 @@ Don't forget to give the project a star! Thanks again!
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
 
 <!-- CONTACT -->
 ## Contact
 
-Your Name - KingOfTNT10@gmail.com
+Gmail - KingOfTNT10@gmail.com
 
 Project Link: [https://github.com/KingOfTNT10/WordSearchPuzzleGenerator](https://github.com/KingOfTNT10/WordSearchPuzzleGenerator)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-## Thanks
-* Thank you [PySimpleGUi](https://github.com/PySimpleGUI) For An [Amazing Library](https://github.com/PySimpleGUI/PySimpleGUI) And Support!
