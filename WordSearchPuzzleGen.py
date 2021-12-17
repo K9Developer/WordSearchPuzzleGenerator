@@ -1,5 +1,6 @@
 import random
 import textwrap
+
 from PIL import Image, ImageDraw, ImageFont
 from fontTools.ttLib import TTFont
 
@@ -649,7 +650,7 @@ def create_search_word_puzzle(words, random_chars='abcdefghijklmnopqrstuvwxyz', 
     :rtype: PIL.Image
     """
 
-    # Setup variables
+    # Setup variables according to multiplier
     global multiplier
     multiplier = res_multiplier
 
@@ -674,6 +675,9 @@ def create_search_word_puzzle(words, random_chars='abcdefghijklmnopqrstuvwxyz', 
     title_size = title_size * multiplier
     subtitle_size = int(subtitle_size * multiplier // 1.7)
     words_in_word_bank_size = words_in_word_bank_size
+
+    for i, word in enumerate(words):
+        words[i] = word.replace('\n', '')
 
     long = []
 

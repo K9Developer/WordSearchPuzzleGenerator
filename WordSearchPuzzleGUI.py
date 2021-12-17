@@ -12,20 +12,18 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter
 from PyQt5.QtPrintSupport import QPrintPreviewDialog, QPrinter
 from PyQt5.QtWidgets import QApplication
+
 import WordSearchPuzzleGen as SWP
+
 # Setup variables
-global layout
+global layout, image
 seed = str(uuid.uuid4()).replace('-', '')
-default_button_texture = r'assets/images/button.png'
-button_switch_on = r'assets/images/SwitchOn.png'
-button_switch_off = r'assets/images/SwitchOff.png'
 default_font = 'Dosis 12 bold'
 category_name_font = 'Dosis 11 bold'
 sg.theme('Dark')
 
 
 def get_scaling():
-
     """
     Gets scaling data.
     Source: https://github.com/PySimpleGUI/PySimpleGUI/issues/4998#issuecomment-985360403
@@ -39,12 +37,12 @@ def get_scaling():
     return scaling
 
 
-def to_clipboard(image):
+def to_clipboard(target_img):
     """
     Puts a PIL image into the clipboard.
     Source: https://stackoverflow.com/a/7052068/16469230
-    :param image: A PIL image to send to the clipboard
-    :type image: PIL.Image
+    :param target_img: A PIL image to send to the clipboard
+    :type target_img: PIL.Image
     :returns: None
     :rtype: None
     """
@@ -56,7 +54,7 @@ def to_clipboard(image):
         win32clipboard.CloseClipboard()
 
     output = io.BytesIO()
-    image.convert("RGB").save(output, "BMP")
+    target_img.convert("RGB").save(output, "BMP")
     data = output.getvalue()[14:]
     output.close()
     send_to_clipboard(win32clipboard.CF_DIB, data)
@@ -236,12 +234,13 @@ def reset_to_default(window):
     # Other
     window['-OTHER1-'].update('')
 
-def print_image(image):
+
+def print_image(target_image):
     """
     This function handles the print preview and the print itself.
     Source: https://github.com/PyQt5/PyQt/issues/145#issuecomment-975009897
-    :param image: A pil image to print preview and print
-    :type image: PIL.Image
+    :param target_image: A pil image to print preview and print
+    :type target_image: PIL.Image
     :return: None
     :rtype: None
     """
@@ -250,7 +249,7 @@ def print_image(image):
         painter = QPainter()
         painter.begin(printer_obj)
         painter.setPen(Qt.red)
-        painter.drawPixmap(0, 0, pil2pixmap(image.resize((int(2480 * 2), int(3508 * 2)), Image.LANCZOS)))
+        painter.drawPixmap(0, 0, pil2pixmap(target_image.resize((int(2480 * 2), int(3508 * 2)), Image.LANCZOS)))
         painter.end()
         dlg.close()
         app.exit()
@@ -287,21 +286,21 @@ def save_file(img):
         sg.popup(f"Saved: {save_filename}")
 
 
-def image_to_bios(image, size: tuple):
+def image_to_bios(target_image, size: tuple):
     """
     Saves a PIL image to bios after it gets resized and keeps it's ratio
     and returns it's value as a base64 encoded data.
-    :param image: A PIL image to get as a base64 encoded data
-    :type image: PIL.Image
+    :param target_image: A PIL image to get as a base64 encoded data
+    :type target_image: PIL.Image
     :param size: The wanted size of the image
     :type size: Tuple(int, int)
     :return: The image as a base64 encoded data
     :rtype: str
     """
 
-    image.thumbnail(size)
+    target_image.thumbnail(size)
     bio = io.BytesIO()
-    image.save(bio, format="PNG")
+    target_image.save(bio, format="PNG")
     value = bio.getvalue()
     bio.close()
     return value
@@ -317,77 +316,163 @@ def setup_layout():
     global layout
 
     toggle_tab = [
-    [sg.Checkbox("Diagonals", default=True, key='-1TOGGLE-', pad=(20, 0), font=default_font, enable_events=True,background_color='#404040')],
-    [sg.Checkbox("Add randomized characters", default=True, key='-2TOGGLE-', pad=(20, 0), font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Checkbox("Add word bank outline", default=True, key='-3TOGGLE-', pad=(20, 0), font=default_font,enable_events=True, background_color='#404040')],
+        [sg.Checkbox("Diagonals", default=True, key='-1TOGGLE-', pad=(20, 0), font=default_font, enable_events=True,
+                     background_color=sg.theme_background_color())],
+        [sg.Checkbox("Add randomized characters", default=True, key='-2TOGGLE-', pad=(20, 0), font=default_font,
+                     enable_events=True, background_color=sg.theme_background_color())],
+        [sg.Checkbox("Add word bank outline", default=True, key='-3TOGGLE-', pad=(20, 0), font=default_font,
+                     enable_events=True, background_color=sg.theme_background_color())],
 
     ]
 
     color_tab = [
-    [sg.Text("Grid - line color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],key='-1COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Grid - background color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],key='-2COLOR_COMBO-', default_value="White", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Grid - text color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'], key='-3COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Grid - randomized characters color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'], key='-4COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Page - background color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'], key='-5COLOR_COMBO-', default_value="White", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Page - title color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'], key='-6COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Page - subtitle color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'], key='-7COLOR_COMBO-', default_value="Gray", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Word bank - outline color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'], key='-8COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Word bank - background color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'], key='-9COLOR_COMBO-', default_value="White", font=default_font, enable_events=True, background_color='#404040')],
-    [sg.Text("Word bank - word color:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'], key='-10COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True, background_color='#404040')],
+        [sg.Text("Grid - line color:", pad=(20, 0), font=default_font, background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-1COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Grid - background color:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-2COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Grid - text color:", pad=(20, 0), font=default_font, background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-3COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Grid - randomized characters color:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-4COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Page - background color:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-5COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Page - title color:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-6COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Page - subtitle color:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-7COLOR_COMBO-', default_value="Gray", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Word bank - outline color:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-8COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Word bank - background color:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-9COLOR_COMBO-', default_value="White", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
+        [sg.Text("Word bank - word color:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Combo(['Red', 'Orange', 'Yellow', 'White', 'Black', 'Blue', 'Green', 'Purple', 'Pink', 'Gray'],
+                  key='-10COLOR_COMBO-', default_value="Black", font=default_font, enable_events=True,
+                  background_color=sg.theme_background_color())],
 
     ]
 
     string_tab = [
-    [sg.Text("Words (seperated by ','):", pad=(20, 0), font=default_font, background_color='#404040'), sg.Column([[sg.Input( default_text="Bagel, Three, House", font=default_font, size=(25, 1), key='-INPUT1STR-', enable_events=True, background_color='#404040')]])],
-    [sg.Text("Available random characters:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Column([[sg.Input(default_text="abcdefghijklmnopqrstuvwxyz", font=default_font, size=(25, 1), key='-INPUT2STR-', enable_events=True, background_color='#404040')]])],
-    [sg.Text("Page title:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Input(default_text="Search Word Puzzle", font=default_font, size=(25, 1), key='-INPUT3STR-', enable_events=True, background_color='#404040')],
-    [sg.Text("Page subtitle:", pad=(20, 0), font=default_font, background_color='#404040'), sg.Column([[sg.Multiline( default_text="Circle the correct words", key='-INPUT4STR-', font=default_font, autoscroll=True, size=(30, 1), background_color='#404040', enable_events=True)]])],
+        [sg.Text("Words (seperated by ','):", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="Bagel, Three, House", font=default_font,
+                              size=(25, 1), key='-INPUT1STR-', enable_events=True,
+                              background_color=sg.theme_background_color())]])],
+        [sg.Text("Available random characters:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="abcdefghijklmnopqrstuvwxyz", font=default_font,
+                              size=(25, 1), key='-INPUT2STR-', enable_events=True,
+                              background_color=sg.theme_background_color())]])],
+        [sg.Text("Page title:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Input(default_text="Search Word Puzzle", font=default_font,
+                  size=(25, 1), key='-INPUT3STR-', enable_events=True, background_color=sg.theme_background_color())],
+        [sg.Text("Page subtitle:", pad=(20, 0), font=default_font,
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Multiline(default_text="Circle the correct words", key='-INPUT4STR-', font=default_font,
+                                  autoscroll=True, size=(30, 1), background_color=sg.theme_background_color(),
+                                  enable_events=True)]])],
 
     ]
 
     number_tab = [
-    [sg.Text("Grid - cell size:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input( default_text="100", font=default_font, size=(3, 1), key='-INPUT1NUM-', enable_events=True, background_color='#404040')]])],
-    [sg.Text("Grid - cells in a row ('auto' to automatically set size):", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input(default_text="auto", font=default_font, size=(4, 1), key='-INPUT2NUM-', enable_events=True, background_color='#404040')]])],
-    [sg.Text("Grid - line thickness:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input( default_text="100", font=default_font, size=(3, 1), key='-INPUT3NUM-', enable_events=True, background_color='#404040')]])],
-    [sg.Text("Grid - text size:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input( default_text="100", font=default_font, size=(3, 1), key='-INPUT4NUM-', background_color='#404040', enable_events=True)]])],
-    [sg.Text("Word bank - outline thickness:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT5NUM-', enable_events=True, background_color='#404040')]])],
-    [sg.Text("Word bank - word size:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input( default_text="100", font=default_font, size=(3, 1), key='-INPUT6NUM-', enable_events=True, background_color='#404040')]])],
-    [sg.Text("Page - title size:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input( default_text="100", font=default_font, size=(3, 1), key='-INPUT7NUM-', enable_events=True, background_color='#404040')]])],
-    [sg.Text("Page - subtitle size:", font=default_font, pad=(20, 0), background_color='#404040'), sg.Column([[sg.Input( default_text="100", font=default_font, size=(3, 1), key='-INPUT8NUM-', enable_events=True, background_color='#404040')]])],
+        [sg.Text("Grid - cell size:", font=default_font, pad=(20, 0), background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT1NUM-',
+                              enable_events=True, background_color=sg.theme_background_color())]])],
+        [sg.Text("Grid - cells in a row ('auto' to automatically set size):", font=default_font, pad=(20, 0),
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="auto", font=default_font, size=(4, 1), key='-INPUT2NUM-',
+                              enable_events=True, background_color=sg.theme_background_color())]])],
+        [sg.Text("Grid - line thickness:", font=default_font, pad=(20, 0),
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT3NUM-',
+                              enable_events=True, background_color=sg.theme_background_color())]])],
+        [sg.Text("Grid - text size:", font=default_font, pad=(20, 0), background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT4NUM-',
+                              background_color=sg.theme_background_color(), enable_events=True)]])],
+        [sg.Text("Word bank - outline thickness:", font=default_font, pad=(20, 0),
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT5NUM-',
+                              enable_events=True, background_color=sg.theme_background_color())]])],
+        [sg.Text("Word bank - word size:", font=default_font, pad=(20, 0),
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT6NUM-',
+                              enable_events=True, background_color=sg.theme_background_color())]])],
+        [sg.Text("Page - title size:", font=default_font, pad=(20, 0),
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT7NUM-',
+                              enable_events=True, background_color=sg.theme_background_color())]])],
+        [sg.Text("Page - subtitle size:", font=default_font, pad=(20, 0),
+                 background_color=sg.theme_background_color()),
+         sg.Column([[sg.Input(default_text="100", font=default_font, size=(3, 1), key='-INPUT8NUM-',
+                              enable_events=True, background_color=sg.theme_background_color())]])],
 
     ]
 
     other_tab = [
-    [sg.Text("Random seed (leave empty for randomness):", font=default_font, pad=(20, 0), background_color='#404040'), sg.Input(default_text="", font=default_font, size=(3, 1), key='-OTHER1-', enable_events=True, background_color='#404040')],
-    [sg.Checkbox('Enhanced resolution (worse performance)', key='switch', enable_events=True, tooltip='This option is recommended only for viewing the end result', pad=(20,0))],
-    [sg.Button('Randomize', font=default_font, key='RANDOMIZE', pad=(20, 10))],
+        [sg.Text("Random seed (leave empty for randomness):", font=default_font, pad=(20, 0),
+                 background_color=sg.theme_background_color()), sg.Input(default_text="", font=default_font,
+                                                                         size=(3, 1), key='-OTHER1-',
+                                                                         enable_events=True,
+                                                                         background_color=sg.theme_background_color())],
+        [sg.Checkbox('Enhanced resolution (worse performance)', key='switch', enable_events=True,
+                     tooltip='This option is recommended only for viewing the end result', pad=(20, 0))],
+        [sg.Button('Randomize', font=default_font, key='RANDOMIZE', pad=(20, 10))],
 
     ]
 
-
-    options_tab_group = [[
-            sg.TabGroup([[
-                sg.Tab('Toggles', toggle_tab),
-                sg.Tab('Colors', color_tab),
-                sg.Tab('Strings', string_tab),
-                sg.Tab('Numbers', number_tab),
-                sg.Tab('Other', other_tab),
-            ]], enable_events=True, key='-TAB_GROUP-', expand_x=False, expand_y=True),sg.Image(key='-CWIMAGE-', right_click_menu=['&Right', ['Copy', 'Save as...', 'Print']])],
-        [sg.Button("Reset to default", key='-RESET-',
-                   button_color='#404040', mouseover_colors='#404040')
+    tabgroup_layout = [[
+        sg.Tab('Toggles', toggle_tab),
+        sg.Tab('Colors', color_tab),
+        sg.Tab('Strings', string_tab),
+        sg.Tab('Numbers', number_tab),
+        sg.Tab('Other', other_tab),
     ]]
 
+    options_tab_group = [[
+        sg.TabGroup(tabgroup_layout, enable_events=True, key='-TAB_GROUP-', expand_x=False, expand_y=True),
+        sg.Image(key='-CWIMAGE-', right_click_menu=['&Right', ['Copy', 'Save as...', 'Print']])],
+        [sg.Button("Reset to default", key='-RESET-', button_color=sg.theme_background_color(),
+                   mouseover_colors=sg.theme_background_color())
+         ]
+    ]
 
     start_window = [
         [sg.Button('Create Page', key='-CREATE_PAGE-')]
     ]
 
-    menu_def = [['&!File', ['&!Save', '&!Open...']]]
+    menu_def = [['&!File', ['&!Save', '&!Open...']], ['&!About', ['&!About the project']]]
 
     layout = [
         [sg.Menu(menu_def, visible=True, key='MENU')],
         [sg.Column(options_tab_group, visible=False, key='OPTIONS'), sg.Column(start_window, key='START')]
     ]
+
 
 def move_center(window):
     """
@@ -413,13 +498,12 @@ def window_loop():
     :return: None
     """
 
-    global seed, layout
+    global seed, layout, image
 
     # Set's up the window
 
     window = sg.Window("Search word puzzle generator", layout, finalize=True, resizable=True)
     window.grab_any_where_on()
-    first = False
 
     # window.Maximize()
     toggle = False
@@ -443,12 +527,11 @@ def window_loop():
         if event == 'Open...':
             event = '-LOAD_CONFIG-'
 
-
         if event == '-CREATE_PAGE-':
             window['OPTIONS'].update(visible=True)
             window['START'].update(visible=False)
-            window['MENU'].update([['&File', ['&Save', '&Open...']]])
-            move_center(window)
+            window['MENU'].update([['&File', ['&Save', '&Open...']], ['&About', ['&About the project']]])
+            window.move(0, 0)
 
         # Detects if the window closed if it does it will exit the program
         if event == sg.WINDOW_CLOSED or event == 'EXIT':
@@ -462,7 +545,6 @@ def window_loop():
         # If the enhanced res toggle button was clicked it will switch the image and the variable and change the tooltip
         if event == 'switch':
             toggle = window['switch'].get()
-
 
         # -------- Store all window element values into variables --------#
 
@@ -809,7 +891,6 @@ def window_loop():
 
             # Calls the search word puzzle generator with the settings the user has inputted
             if event != '-TAB_GROUP-':
-
                 image = SWP.create_search_word_puzzle(
                     words=tmp_words,
                     random_chars=available_random_chars,
@@ -899,6 +980,7 @@ def window_loop():
         # If there was even one error it will disable the buttons and show a tooltip on the buttons
         else:
             pass
+
 
 # If the file was ran directly it will run the program
 if __name__ == '__main__':
