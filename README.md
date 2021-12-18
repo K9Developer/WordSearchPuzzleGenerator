@@ -78,6 +78,10 @@ This is an example of how to list things you need to use the software and how to
   ```sh
   pip install pywin32
   ```
+* webbrowser
+  ```sh
+  pip install webbrowser
+  ```
 * Pillow / PIL
   ```sh
   pip install Pillow
