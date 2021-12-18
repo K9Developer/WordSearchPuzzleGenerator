@@ -1,11 +1,12 @@
 import random
+import secrets
 import textwrap
 
 from PIL import Image, ImageDraw, ImageFont
 from fontTools.ttLib import TTFont
 
 multiplier = 2
-global_font = r'assets\fonts\VarelaRound-Regular.ttf'
+global_font = 'VarelaRound-Regular.ttf'
 
 
 def create_grid(cells_in_row=10, cell_size=10, line_color=(0, 0, 0), background_color=(255, 255, 255), line_width=10,
@@ -344,7 +345,7 @@ def populate_list(lst, target_num, randomize=False, hard_randomizer=False):
 
     # Appends a random elements from the list to the list if hard_randomizer is True if not it would just go by order
     for i in range(elements_left):
-        lst.append(lst[i if not hard_randomizer else random.randint(0, len(lst) - 1)])
+        lst.append(lst[i if not hard_randomizer else secrets.randbelow(len(lst) - 1)])
 
     # Shuffles the list a "couple" times
     for i in range(50):
@@ -410,9 +411,10 @@ def draw_chars(words, available_chars='abcdefghijklmnopqrstuvwxyz', allow_diagon
         words = words.split(',')
 
     # Initializes the ImageDraw.Draw for the img so I can draw on it
-    img_draw = ImageDraw.Draw(img)
+    img = img.convert("RGBA")
+    img_draw = ImageDraw.Draw(img, "RGBA")
 
-    for word in words:
+    for word_counter, word in enumerate(words):
 
         # If the word's first char is in hebrew it would reverse the word
         if list(word)[0] in 'אבגדהוזחטיכלמנסעפצקרשת':
@@ -421,8 +423,8 @@ def draw_chars(words, available_chars='abcdefghijklmnopqrstuvwxyz', allow_diagon
 
         # Gets a random coord out of a random set
         c = list(coords.values())
-        t = random.sample(c, 1)[0]
-        start_coord = random.sample(list(t), 1)[0]
+        t = c[secrets.randbelow(len(c))]
+        start_coord = list(t)[secrets.randbelow(len(c))]
 
         # Checks if the word can be placed with the start coord as the start coord set above
         word_coords = check(coords, start_coord, word, words, allow_diagonal)
@@ -430,8 +432,8 @@ def draw_chars(words, available_chars='abcdefghijklmnopqrstuvwxyz', allow_diagon
         # If the first try didn't work it will loop until it will find valid coords for the word
         while word_coords is None:
             c = list(coords.values())
-            t = random.sample(c, 1)[0]
-            start_coord = random.sample(list(t), 1)[0]
+            t = c[secrets.randbelow(len(c))]
+            start_coord = list(t)[secrets.randbelow(len(c))]
             word_coords = check(coords, start_coord, word, words, allow_diagonal)
 
         # Writes the chars with the chars the check function returned
@@ -440,12 +442,19 @@ def draw_chars(words, available_chars='abcdefghijklmnopqrstuvwxyz', allow_diagon
             img_draw.text((c[0], c[1] - multiplier * (2 if high_res else 4) + (97 if high_res else 2)),
                           list(word)[counter].upper(), fill=grid_text_color, font=font,
                           anchor='mb')
-
+        
             # Sets all the coords the check function
             # returned as occupied (sets it as the char that was drawn in that coord)
             for i in coords:
                 if c in list(coords[i].keys()):
                     coords[i][c] = list(word)[counter]
+
+        # Draw a circle around the first word on the grid
+        if word_counter == 0:
+            shape = [
+                (word_coords[0][0]-img_draw.textsize(word[0], font)[0], word_coords[0][1] - multiplier * (2 if high_res else 4) + (97 if high_res else 2)-img_draw.textsize(word[0], font)[1]),
+                (word_coords[-1][0], word_coords[-1][1])
+            ]
 
     # If the user has inputted a random seed it will set the seed to that if not it will set it to a random one
     if random_seed is not None:
@@ -759,7 +768,7 @@ def create_search_word_puzzle(words, random_chars='abcdefghijklmnopqrstuvwxyz', 
                            (multiplier * 10)))
 
     # Draws the credit on the page
-    page_draw.text((multiplier * 10, page.size[1] - page.size[1] // 33), 'Made By KingOfTNT10', fill='gray', font=font)
+    page_draw.text((multiplier * 10, page.size[1] - page.size[1] // 20), 'Made By KingOfTNT10', fill=(128, 128, 128, 50), font=font)
 
     # Pastes the img on the page
     page.paste(img, ((page.size[0] - img.size[0]) // 2, page.size[1] // 5))

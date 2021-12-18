@@ -3,15 +3,16 @@ import io
 import json
 import sys
 import uuid
+import webbrowser
 
-import PySimpleGUI as sg
-import win32clipboard
 from PIL import Image
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter
 from PyQt5.QtPrintSupport import QPrintPreviewDialog, QPrinter
 from PyQt5.QtWidgets import QApplication
+import PySimpleGUI as sg
+import win32clipboard
 
 import WordSearchPuzzleGen as SWP
 
@@ -20,6 +21,27 @@ global layout, image
 seed = str(uuid.uuid4()).replace('-', '')
 default_font = 'Dosis 12 bold'
 category_name_font = 'Dosis 11 bold'
+github_view_data = """iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAD
+                   sMAAA7DAcdvqGQAAAV4SURBVGhDzZnNbhxFEMfH65z8tR+OjUVix7n4YIOUPAHYES8RLnkLMEKIF/CVSOHC1S/hTeQLEgpEDv
+                   YFoQQQKGDi3bUdLsRr+l9dNVvT0zPTvd6Y/DY1XVXT3VXV0zM73iQjYvno6KhzHgH6Y5wdfnHGuB0KJMTqhRkzsDoUNW5jaNC
+                   SGtgeCTwl5mxYTxxRq8CBLoXYKxR0Rer1+q3LLAIgHuKyeXG2t7fbmPT/AvE5leGJfRK9KfgJV0rhPsTgZrM51I33Juh0Ot1W
+                   q9VkM4f3HsHlfJuKAMgnaptNTEzQjf22UvQAyG0tdGY1x/zCNauYUYvXF5PH331r7RHw+RdfJg8efM1Wkvz14nfW8vgezRlHW
+                   RFgTgpxOCwJWgUWR4JSMuaALKrmdIvRBr6xS58OcwvvsgYwNPSrxddXQmv/wHf44g/W/Zg6cON3raVu9qoiCMSUuFg2sVM/J+
+                   L65UK7vtwcOLBegZtv1LvWIN75QCdh+7xPjozPCOrL1jI4ZzXxmQ/PHQsVYgYHjpXwwLQ0TNkp2meTo5Zty0DPpm70wHR03lF
+                   XJI0tAhwfze34cgJ8fpEhQCFBf9zMzi+YGLKqiFf8kfO+XnTOFOt+yK8+iBcI5V8zryI/kFmFzYsEgUgHyi8iV5waR9KxjuSu
+                   ZCCS/5iZoHLY7Nw7rBWhH69aD6G8/8vDP1krBt8pQfcIwogAbVuhdSbRxzAZjBUBWg9gOfxmp0tvgnKbijoHwflcH4jTz2aq7
+                   YEvMz6AO3c+uhe0tVpX51m7fJ79/BP+QmXLT7vdfhhUSHPWFOJu5dhbQcA4TckceJt68v3jZGlpkT3FBG4tE43qVeLaGbFJaD
+                   vVMU5L2sdIZozdYiFFgLgvxGB4n6dovYTMmDjCnlomgAiCpUmyLWT6Obbrlzanc6vPVYF7JKgQ/eovU1MgtKI7QYuSEL8+n9G
+                   5jWFra+tR0M3eaF01R3RDQbrVFPkEOVc0h79v9+hv1osxC30zqBBQb85Sm6ZhlKKRbooafY5Sp4N/rl7nJWvl0Dc7fmZhOwiJ
+                   V1Z+yanMOeiYJ2wp/Uj+WI9lc1Gewaii3myxZkBwXs0c3nNwFGWsz1m91zmyZgXYVqZ5TuFCtxeoNwbFFNWiUwJ68nzK2Rb0u
+                   mFFAGwranGIKQSgGPvMKsOmN2Y+tmdYiONu9U8HGimEHr9iaL66fz+Zqft/ocSKUUA3N9ipmAP+yU1APhbg2Jhv2CJAqviuyn
+                   S9wSt6npz0qp8Jtr/NTbeCtn/79ZfKl8EqdCHpF6Lx5ZbfJm/rQ5IhyGroVgSIPoIiMvnqb3bvkh+jGI7+yaeb1lmEbxsZoWV
+                   zfCMgk6++8oRvi03N2NVD5x+fPk1u3FgiWzPNfWQw+kKnq2+mJJ19APrJcc8akegtJeTetVZWVm6zmnKKgCYDlLj23vvJ1HQ9
+                   2d3dpXN7e3tkI0FaAhbRz/t4D8v6SDfNMPjyA7nKwM7OTnt9ff1DNolr15eSXsANH8PpyTFrYeAtd2NjY53NDN5CgO9/rKamZ
+                   1grBitdOKlDTCFD/Y8VwCD3PQyBIZ9tbpptYl/dIR/fvZvq5pDq1tT2QGKoKiIIbDMTuJKJyaloCQHxOZVSgnbB6urqrf39/d
+                   JfJCcnp+xsstg0sznI6tODBpfImjj16vSUDT9ra2u3Dw4OnrBZCoULBSvEag6zwqyF88+r4kJ8j9gyCu8RH5jcULBXpUa3dYG
+                   /cD0Qo4kgbAYTVQjTRSDAtkXnhgtH+aJlyfhZV/CUmHOoZ/wwhaRwbHCz3+93aefpXFnsrUJa6kN/jLPD46+Ay4Un8LA8Pj5+
+                   r1arfTB+5Ur6pXr2+vXDfj95dHb27zfGfG69oyJJ/gNAqt4egK2qkgAAAABJRU5ErkJggg=="""
 sg.theme('Dark')
 
 
@@ -75,8 +97,10 @@ def pil2pixmap(im):
         im = Image.merge("RGB", (b, g, r))
     im2 = im.convert("RGBA")
     data = im2.tobytes("raw", "RGBA")
-    qim = QtGui.QImage(data, im.size[0], im.size[1], QtGui.QImage.Format_ARGB32)
-    qim = qim.scaled(int(2480 * 2), int(3508 * 2), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+    qim = QtGui.QImage(
+        data, im.size[0], im.size[1], QtGui.QImage.Format_ARGB32)
+    qim = qim.scaled(int(2480 * 2), int(3508 * 2),
+                     Qt.KeepAspectRatio, Qt.SmoothTransformation)
     pixmap = QtGui.QPixmap.fromImage(qim)
     return pixmap
 
@@ -182,10 +206,12 @@ def load_configuration(window):
             # Updates all the window elements according to the loaded data
             for counter, key in enumerate(data):
                 w_key = key_dict[key]
-                window[w_key].update(data[key].replace('None', '') if type(data[key]) == str else data[key])
+                window[w_key].update(data[key].replace(
+                    'None', '') if type(data[key]) == str else data[key])
 
         except json.JSONDecodeError as ex:
-            sg.popup(f'Error while opening the config ({save_filename}) \nError:\n {ex}')
+            sg.popup(
+                f'Error while opening the config ({save_filename}) \nError:\n {ex}')
 
 
 def reset_to_default(window):
@@ -249,7 +275,8 @@ def print_image(target_image):
         painter = QPainter()
         painter.begin(printer_obj)
         painter.setPen(Qt.red)
-        painter.drawPixmap(0, 0, pil2pixmap(target_image.resize((int(2480 * 2), int(3508 * 2)), Image.LANCZOS)))
+        painter.drawPixmap(0, 0, pil2pixmap(target_image.resize(
+            (int(2480 * 2), int(3508 * 2)), Image.LANCZOS)))
         painter.end()
         dlg.close()
         app.exit()
@@ -435,14 +462,15 @@ def setup_layout():
     ]
 
     other_tab = [
-        [sg.Text("Random seed (leave empty for randomness):", font=default_font, pad=(20, 0),
+        [sg.Text("Random seed (leave empty for randomness):", font=default_font, pad=(20, 0),#7af820
                  background_color=sg.theme_background_color()), sg.Input(default_text="", font=default_font,
                                                                          size=(3, 1), key='-OTHER1-',
                                                                          enable_events=True,
                                                                          background_color=sg.theme_background_color())],
         [sg.Checkbox('Enhanced resolution (worse performance)', key='switch', enable_events=True,
                      tooltip='This option is recommended only for viewing the end result', pad=(20, 0))],
-        [sg.Button('Randomize', font=default_font, key='RANDOMIZE', pad=(20, 10))],
+        [sg.Button('Randomize', font=default_font,
+                   key='RANDOMIZE', pad=(20, 10))],
 
     ]
 
@@ -455,10 +483,13 @@ def setup_layout():
     ]]
 
     options_tab_group = [[
-        sg.TabGroup(tabgroup_layout, enable_events=True, key='-TAB_GROUP-', expand_x=False, expand_y=True),
+        sg.TabGroup(tabgroup_layout, enable_events=True,
+                    key='-TAB_GROUP-', expand_x=False, expand_y=True),
         sg.Image(key='-CWIMAGE-', right_click_menu=['&Right', ['Copy', 'Save as...', 'Print']])],
         [sg.Button("Reset to default", key='-RESET-', button_color=sg.theme_background_color(),
-                   mouseover_colors=sg.theme_background_color())
+                   mouseover_colors=sg.theme_background_color()),
+         sg.Button(image_data=github_view_data, size=50, mouseover_colors=sg.theme_background_color(),
+                   button_color=sg.theme_background_color(), border_width=0, key='-VIEW_GITHUB-')
          ]
     ]
 
@@ -466,11 +497,12 @@ def setup_layout():
         [sg.Button('Create Page', key='-CREATE_PAGE-')]
     ]
 
-    menu_def = [['&!File', ['&!Save', '&!Open...']], ['&!About', ['&!About the project']]]
+    menu_def = [['&!File', ['&!Save', '&!Open...']]]
 
     layout = [
         [sg.Menu(menu_def, visible=True, key='MENU')],
-        [sg.Column(options_tab_group, visible=False, key='OPTIONS'), sg.Column(start_window, key='START')]
+        [sg.Column(options_tab_group, visible=False, key='OPTIONS'),
+         sg.Column(start_window, key='START')]
     ]
 
 
@@ -502,7 +534,8 @@ def window_loop():
 
     # Set's up the window
 
-    window = sg.Window("Search word puzzle generator", layout, finalize=True, resizable=True)
+    window = sg.Window("Search word puzzle generator",
+                       layout, finalize=True, resizable=True)
     window.grab_any_where_on()
 
     # window.Maximize()
@@ -511,6 +544,9 @@ def window_loop():
     # Window loop
     while True:
         event, values = window.read()
+
+        if event == '-VIEW_GITHUB-':
+            webbrowser.open('https://github.com/KingOfTNT10/WordSearchPuzzleGenerator')  # Go to example.com
 
         if event == 'Copy':
             event = '-COPY_TO_CLIPBOARD-'
@@ -530,7 +566,7 @@ def window_loop():
         if event == '-CREATE_PAGE-':
             window['OPTIONS'].update(visible=True)
             window['START'].update(visible=False)
-            window['MENU'].update([['&File', ['&Save', '&Open...']], ['&About', ['&About the project']]])
+            window['MENU'].update([['&File', ['&Save', '&Open...']]])
             window.move(0, 0)
 
         # Detects if the window closed if it does it will exit the program
@@ -582,10 +618,12 @@ def window_loop():
         page_subtitle_size = window['-INPUT8NUM-'].get()
 
         # Other
-        random_seed = None if window['-OTHER1-'].get() == "" else window['-OTHER1-'].get()
+        random_seed = None if window['-OTHER1-'].get(
+        ) == "" else window['-OTHER1-'].get()
 
         # Set's up the the error list variable
-        checks = [False, False, False, False, False, False, False, False, False, False, False]
+        checks = [False, False, False, False, False,
+                  False, False, False, False, False, False]
 
         # Convert the words variable from a string to a list
         t_words = []
@@ -603,13 +641,15 @@ def window_loop():
         # If the words list is bigger than 15 it will show an error
         elif len(words) > 15:
             window['-INPUT1STR-'].ParentRowFrame.config(background='red')
-            window['-INPUT1STR-'].set_tooltip("You have reached the max word limit (15)")
+            window['-INPUT1STR-'].set_tooltip(
+                "You have reached the max word limit (15)")
             checks[0] = False
 
         # If the chars in the word list is bigger than 60 it will show an error
         elif len(''.join(words)) > 65:
             window['-INPUT1STR-'].ParentRowFrame.config(background='red')
-            window['-INPUT1STR-'].set_tooltip("You have reached the max character limit (65)")
+            window['-INPUT1STR-'].set_tooltip(
+                "You have reached the max character limit (65)")
             checks[0] = False
 
         # If the number of words is lower than 3 it will show an error
@@ -633,23 +673,27 @@ def window_loop():
 
             else:
                 window['-INPUT1STR-'].set_tooltip('All good :)')
-                window['-INPUT1STR-'].ParentRowFrame.config(background=sg.theme_background_color())
+                window['-INPUT1STR-'].ParentRowFrame.config(
+                    background=sg.theme_background_color())
                 checks[0] = True
 
         else:
             window['-INPUT1STR-'].set_tooltip('All good :)')
-            window['-INPUT1STR-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT1STR-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
             checks[0] = True
 
         # If the number of new lines in the subtitle is bigger than 2 it will show an error
         if page_subtitle.count('\n') > 2:
-            window['-INPUT4STR-'].set_tooltip('You have reached the maximum lines (3)')
+            window['-INPUT4STR-'].set_tooltip(
+                'You have reached the maximum lines (3)')
             window['-INPUT4STR-'].ParentRowFrame.config(background='red')
             checks[-1] = False
 
         else:
             window['-INPUT4STR-'].set_tooltip('All good :)')
-            window['-INPUT4STR-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT4STR-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
             checks[-1] = True
 
         # If available_random_chars (the random chars it will put on the grid) is empty it will show an error
@@ -661,7 +705,8 @@ def window_loop():
         else:
             window['-INPUT2STR-'].set_tooltip('All good :)')
             checks[1] = True
-            window['-INPUT2STR-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT2STR-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
 
         # If the cell size is empty it will show an error
         if grid_cell_size == "":
@@ -680,13 +725,15 @@ def window_loop():
 
             # If the cell size is bigger than 100 it will show an error
             if grid_cell_size > 100:
-                window['-INPUT1NUM-'].set_tooltip("This field has to be lower than or equal to 100")
+                window['-INPUT1NUM-'].set_tooltip(
+                    "This field has to be lower than or equal to 100")
                 window['-INPUT1NUM-'].ParentRowFrame.config(background='red')
                 checks[2] = False
 
             else:
                 window['-INPUT1NUM-'].set_tooltip('All good :)')
-                window['-INPUT1NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+                window['-INPUT1NUM-'].ParentRowFrame.config(
+                    background=sg.theme_background_color())
                 checks[2] = True
 
         # If the cells in a row field is empty it will show an error
@@ -697,7 +744,8 @@ def window_loop():
 
         # If the cells in a row field is NOT auto and is not a digit it will show an error
         elif grid_cells_in_row != "auto" and not grid_cells_in_row.isdigit():
-            window['-INPUT2NUM-'].set_tooltip("This field has to be a number or 'auto'")
+            window['-INPUT2NUM-'].set_tooltip(
+                "This field has to be a number or 'auto'")
             window['-INPUT2NUM-'].ParentRowFrame.config(background='red')
             checks[3] = False
 
@@ -709,8 +757,10 @@ def window_loop():
 
                 # If the cells in a row are bigger than 100 it will show an error
                 if grid_cells_in_row > 100:
-                    window['-INPUT2NUM-'].set_tooltip("This field has to be lower than or equal to 100")
-                    window['-INPUT2NUM-'].ParentRowFrame.config(background='red')
+                    window['-INPUT2NUM-'].set_tooltip(
+                        "This field has to be lower than or equal to 100")
+                    window['-INPUT2NUM-'].ParentRowFrame.config(
+                        background='red')
                     checks[3] = False
                 else:
 
@@ -721,17 +771,20 @@ def window_loop():
                             f"The length of {max(words, key=len)} is larger then or equal to the cells in a row, "
                             f"either change the word or\nchange the cells in a row to "
                             f"'auto' or to more than {len(max(words, key=len))}")
-                        window['-INPUT2NUM-'].ParentRowFrame.config(background='red')
+                        window['-INPUT2NUM-'].ParentRowFrame.config(
+                            background='red')
                         checks[0] = False
 
                     else:
                         window['-INPUT2NUM-'].set_tooltip('All good :)')
-                        window['-INPUT2NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+                        window['-INPUT2NUM-'].ParentRowFrame.config(
+                            background=sg.theme_background_color())
                         checks[3] = True
 
             else:
                 window['-INPUT2NUM-'].set_tooltip('All good :)')
-                window['-INPUT2NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+                window['-INPUT2NUM-'].ParentRowFrame.config(
+                    background=sg.theme_background_color())
                 checks[3] = True
 
         # If the line width of the grid is empty it will show an error
@@ -748,14 +801,16 @@ def window_loop():
 
         # If line width of the grid is bigger than 100 is will show an error
         elif int(grid_line_width) > 100:
-            window['-INPUT3NUM-'].set_tooltip("This field has lower than or equal to 100")
+            window['-INPUT3NUM-'].set_tooltip(
+                "This field has lower than or equal to 100")
             window['-INPUT3NUM-'].ParentRowFrame.config(background='red')
             checks[4] = False
 
         else:
             grid_line_width = int(grid_line_width)
             window['-INPUT3NUM-'].set_tooltip("All good :)")
-            window['-INPUT3NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT3NUM-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
             checks[4] = True
 
         # If the text size of the grid is empty it will show an error
@@ -772,14 +827,16 @@ def window_loop():
 
         # If the text size of the grid is bigger than 100 it will show an error
         elif int(grid_text_size) > 100:
-            window['-INPUT4NUM-'].set_tooltip("This field has lower than or equal to 100")
+            window['-INPUT4NUM-'].set_tooltip(
+                "This field has lower than or equal to 100")
             window['-INPUT4NUM-'].ParentRowFrame.config(background='red')
             checks[5] = False
 
         else:
             grid_text_size = int(grid_text_size)
             window['-INPUT4NUM-'].set_tooltip("All good :)")
-            window['-INPUT4NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT4NUM-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
             checks[5] = True
 
         # If the word bank outline width is empty it will show an error
@@ -796,14 +853,16 @@ def window_loop():
 
         # If the word bank outline width is bigger than 100 it will show an error
         elif int(word_bank_outline_width) > 100:
-            window['-INPUT5NUM-'].set_tooltip("This field has lower than or equal to 100")
+            window['-INPUT5NUM-'].set_tooltip(
+                "This field has lower than or equal to 100")
             window['-INPUT5NUM-'].ParentRowFrame.config(background='red')
             checks[6] = False
 
         else:
             word_bank_outline_width = int(word_bank_outline_width)
             window['-INPUT5NUM-'].set_tooltip("All good :)")
-            window['-INPUT5NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT5NUM-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
             checks[6] = True
 
         # If the word bank's word size is empty it will show an error
@@ -820,14 +879,16 @@ def window_loop():
 
         # If the word bank's word size is bigger than 100 it will show an error
         elif int(word_bank_word_size) > 100:
-            window['-INPUT6NUM-'].set_tooltip("This field has lower than or equal to 100")
+            window['-INPUT6NUM-'].set_tooltip(
+                "This field has lower than or equal to 100")
             window['-INPUT6NUM-'].ParentRowFrame.config(background='red')
             checks[7] = False
 
         else:
             word_bank_word_size = int(word_bank_word_size)
             window['-INPUT6NUM-'].set_tooltip("All good :)")
-            window['-INPUT6NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT6NUM-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
             checks[7] = True
 
         # If the page title size is empty it will show an error
@@ -844,14 +905,16 @@ def window_loop():
 
         # If the page title size is bigger than it will show an error
         elif int(page_title_size) > 100:
-            window['-INPUT7NUM-'].set_tooltip("This field has lower than or equal to 100")
+            window['-INPUT7NUM-'].set_tooltip(
+                "This field has lower than or equal to 100")
             window['-INPUT7NUM-'].ParentRowFrame.config(background='red')
             checks[8] = False
 
         else:
             page_title_size = int(page_title_size)
             window['-INPUT7NUM-'].set_tooltip("All good :)")
-            window['-INPUT7NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT7NUM-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
             checks[8] = True
 
         # If the page subtitle size is empty it will show an error
@@ -868,19 +931,22 @@ def window_loop():
 
         # If the page subtitle size is bigger than 100 it will show an error
         elif int(page_subtitle_size) > 100:
-            window['-INPUT8NUM-'].set_tooltip("This field has lower than or equal to 100")
+            window['-INPUT8NUM-'].set_tooltip(
+                "This field has lower than or equal to 100")
             window['-INPUT8NUM-'].ParentRowFrame.config(background='red')
             checks[9] = False
 
         else:
             page_subtitle_size = int(page_subtitle_size)
             window['-INPUT8NUM-'].set_tooltip("All good :)")
-            window['-INPUT8NUM-'].ParentRowFrame.config(background=sg.theme_background_color())
+            window['-INPUT8NUM-'].ParentRowFrame.config(
+                background=sg.theme_background_color())
             checks[9] = True
 
         # If all the checks have passed it will continue
         if not all(checks) and event in ['-SAVE_FILE-', '-PRINT-', '-COPY_TO_CLIPBOARD-']:
-            sg.popup_error('There are some errors in the input! look for red boxes')
+            sg.popup_error(
+                'There are some errors in the input! look for red boxes')
 
         if all(checks):
             # Converts the string of words to a list
@@ -922,11 +988,12 @@ def window_loop():
                     # This is the resolution multiplier and it will rise automatically if
                     # the user has printed/copied/saved the image
                     res_multiplier=4 if (
-                            event in ['-SAVE_FILE-', '-PRINT-', '-COPY_TO_CLIPBOARD-'] or toggle) else 2
+                        event in ['-SAVE_FILE-', '-PRINT-', '-COPY_TO_CLIPBOARD-'] or toggle) else 2
                 )
                 # If the user has not pressed on the save/print/copy image buttons it will show the image on the page
             if event not in ['-SAVE_FILE-', '-PRINT-', '-COPY_TO_CLIPBOARD-']:
-                window["-CWIMAGE-"].update(data=image_to_bios(image, (750, 750)))
+                window["-CWIMAGE-"].update(
+                    data=image_to_bios(image, (750, 750)))
 
             # If the user has pressed the save file button it will call the save_file function
             if event == '-SAVE_FILE-':
@@ -943,30 +1010,53 @@ def window_loop():
             # If the user has pressed the save config button it will call the save_configuration function
             elif event == '-SAVE_CONFIG-':
                 save_configuration([(allow_diagonals, f'{allow_diagonals=}'.split('=')[0]),
-                                    (add_random_chars, f'{add_random_chars=}'.split('=')[0]),
-                                    (add_word_bank_outline, f'{add_word_bank_outline=}'.split('=')[0]),
-                                    (grid_line_color, f'{grid_line_color=}'.split('=')[0]),
-                                    (grid_background_color, f'{grid_background_color=}'.split('=')[0]),
-                                    (grid_text_color, f'{grid_text_color=}'.split('=')[0]),
-                                    (grid_random_chars_color, f'{grid_random_chars_color=}'.split('=')[0]),
-                                    (page_background_color, f'{page_background_color=}'.split('=')[0]),
-                                    (page_title_color, f'{page_title_color=}'.split('=')[0]),
-                                    (page_subtitle_color, f'{page_subtitle_color=}'.split('=')[0]),
-                                    (word_bank_outline_color, f'{word_bank_outline_color=}'.split('=')[0]),
-                                    (word_bank_background_color, f'{word_bank_background_color=}'.split('=')[0]),
-                                    (word_bank_word_color, f'{word_bank_word_color=}'.split('=')[0]),
+                                    (add_random_chars,
+                                     f'{add_random_chars=}'.split('=')[0]),
+                                    (add_word_bank_outline,
+                                     f'{add_word_bank_outline=}'.split('=')[0]),
+                                    (grid_line_color,
+                                     f'{grid_line_color=}'.split('=')[0]),
+                                    (grid_background_color,
+                                     f'{grid_background_color=}'.split('=')[0]),
+                                    (grid_text_color,
+                                     f'{grid_text_color=}'.split('=')[0]),
+                                    (grid_random_chars_color,
+                                     f'{grid_random_chars_color=}'.split('=')[0]),
+                                    (page_background_color,
+                                     f'{page_background_color=}'.split('=')[0]),
+                                    (page_title_color,
+                                     f'{page_title_color=}'.split('=')[0]),
+                                    (page_subtitle_color,
+                                     f'{page_subtitle_color=}'.split('=')[0]),
+                                    (word_bank_outline_color,
+                                     f'{word_bank_outline_color=}'.split('=')[0]),
+                                    (word_bank_background_color,
+                                     f'{word_bank_background_color=}'.split('=')[0]),
+                                    (word_bank_word_color,
+                                     f'{word_bank_word_color=}'.split('=')[0]),
                                     (words, f'{words=}'.split('=')[0]),
-                                    (available_random_chars, f'{available_random_chars=}'.split('=')[0]),
-                                    (page_title, f'{page_title=}'.split('=')[0]),
-                                    (page_subtitle, f'{page_subtitle=}'.split('=')[0]),
-                                    (grid_cell_size, f'{grid_cell_size=}'.split('=')[0]),
-                                    (grid_cells_in_row, f'{grid_cells_in_row=}'.split('=')[0]),
-                                    (grid_line_width, f'{grid_line_width=}'.split('=')[0]),
-                                    (grid_text_size, f'{grid_text_size=}'.split('=')[0]),
-                                    (word_bank_outline_width, f'{word_bank_outline_width=}'.split('=')[0]),
-                                    (word_bank_word_size, f'{word_bank_word_size=}'.split('=')[0]),
-                                    (page_title_size, f'{page_title_size=}'.split('=')[0]),
-                                    (page_subtitle_size, f'{page_subtitle_size=}'.split('=')[0]),
+                                    (available_random_chars,
+                                     f'{available_random_chars=}'.split('=')[0]),
+                                    (page_title,
+                                     f'{page_title=}'.split('=')[0]),
+                                    (page_subtitle,
+                                     f'{page_subtitle=}'.split('=')[0]),
+                                    (grid_cell_size,
+                                     f'{grid_cell_size=}'.split('=')[0]),
+                                    (grid_cells_in_row,
+                                     f'{grid_cells_in_row=}'.split('=')[0]),
+                                    (grid_line_width,
+                                     f'{grid_line_width=}'.split('=')[0]),
+                                    (grid_text_size,
+                                     f'{grid_text_size=}'.split('=')[0]),
+                                    (word_bank_outline_width,
+                                     f'{word_bank_outline_width=}'.split('=')[0]),
+                                    (word_bank_word_size,
+                                     f'{word_bank_word_size=}'.split('=')[0]),
+                                    (page_title_size,
+                                     f'{page_title_size=}'.split('=')[0]),
+                                    (page_subtitle_size,
+                                     f'{page_subtitle_size=}'.split('=')[0]),
                                     (random_seed, f'{random_seed=}'.split('=')[0])])
 
             # If the user has pressed the reset to default button it will call the reset_to_default function
@@ -985,5 +1075,4 @@ def window_loop():
 # If the file was ran directly it will run the program
 if __name__ == '__main__':
     setup_layout()
-    window_loop()
     window_loop()
