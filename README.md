@@ -90,6 +90,11 @@ This is an example of how to list things you need to use the software and how to
   ```sh
   pip install PyQt5
   ```
+* PyQt5
+  ```sh
+  pip install webbrowser
+  ``` 
+ 
 * textwrap
   ```sh
   pip install textwrap3
