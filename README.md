@@ -115,13 +115,12 @@ This is an example of how to list things you need to use the software and how to
 
 To run the software you need to run the GUI file (WordSearchPuzzleGUI.py)
 then you can edit all the options that relate to the puzzle
-![image](https://user-images.githubusercontent.com/66069146/146639183-5e3c8605-b42f-4dcd-a8dd-8fa0c5ffbd41.png)
+![image](https://user-images.githubusercontent.com/66069146/144716879-2d90047d-a42b-40ba-abc7-72e1ef375844.png)
 And then you have the next options
 * Save
 * Copy
 * Print
 * Save config
-* Load config
 
 The image looks like this:
 ![Untitled](https://user-images.githubusercontent.com/66069146/144716963-7e6589fe-39d7-43d9-b822-f7fe24c957b8.png)

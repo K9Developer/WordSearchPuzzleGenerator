@@ -5,14 +5,14 @@ import sys
 import uuid
 import webbrowser
 
+import PySimpleGUI as sg
+import win32clipboard
 from PIL import Image
 from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter
 from PyQt5.QtPrintSupport import QPrintPreviewDialog, QPrinter
 from PyQt5.QtWidgets import QApplication
-import PySimpleGUI as sg
-import win32clipboard
 
 import WordSearchPuzzleGen as SWP
 
@@ -582,6 +582,11 @@ def window_loop():
         if event == 'switch':
             toggle = window['switch'].get()
 
+        # If the user has pressed the load config button it will call the load_configuration function,
+        # This function is before the image gen because it needs to update after the changes have been made
+        if event == '-LOAD_CONFIG-':
+            load_configuration(window)
+
         # -------- Store all window element values into variables --------#
 
         # Toggles
@@ -1034,7 +1039,7 @@ def window_loop():
                                      f'{word_bank_background_color=}'.split('=')[0]),
                                     (word_bank_word_color,
                                      f'{word_bank_word_color=}'.split('=')[0]),
-                                    (words, f'{words=}'.split('=')[0]),
+                                    (', '.join(words), f'{words=}'.split('=')[0]),
                                     (available_random_chars,
                                      f'{available_random_chars=}'.split('=')[0]),
                                     (page_title,
@@ -1062,10 +1067,6 @@ def window_loop():
             # If the user has pressed the reset to default button it will call the reset_to_default function
             elif event == '-RESET-':
                 reset_to_default(window)
-
-            # If the user has pressed the load config button it will call the load_configuration function
-            elif event == '-LOAD_CONFIG-':
-                load_configuration(window)
 
         # If there was even one error it will disable the buttons and show a tooltip on the buttons
         else:
