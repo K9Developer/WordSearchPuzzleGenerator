@@ -18,6 +18,7 @@ import WordSearchPuzzleGen as SWP
 
 # Setup variables
 global layout, image
+sg.theme('Dark')
 seed = str(uuid.uuid4()).replace('-', '')
 default_font = 'Dosis 12 bold'
 category_name_font = 'Dosis 11 bold'
@@ -42,8 +43,6 @@ github_view_data = """iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAAAXNSR0IArs
                    JfJCcnp+xsstg0sznI6tODBpfImjj16vSUDT9ra2u3Dw4OnrBZCoULBSvEag6zwqyF88+r4kJ8j9gyCu8RH5jcULBXpUa3dYG
                    /cD0Qo4kgbAYTVQjTRSDAtkXnhgtH+aJlyfhZV/CUmHOoZ/wwhaRwbHCz3+93aefpXFnsrUJa6kN/jLPD46+Ay4Un8LA8Pj5+
                    r1arfTB+5Ur6pXr2+vXDfj95dHb27zfGfG69oyJJ/gNAqt4egK2qkgAAAABJRU5ErkJggg=="""
-sg.theme('Dark')
-
 
 def get_scaling():
     """
